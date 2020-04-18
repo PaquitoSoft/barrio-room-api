@@ -1,14 +1,12 @@
 const fs = require('fs');
 const https = require('https');
-const express = require('express');
 const socketIO = require('socket.io');
 const debug = require('debug')('barrio:app');
 
-const app = express();
 const server = https.createServer({
 	key: fs.readFileSync('./cert/server-key.pem'),
 	cert: fs.readFileSync('./cert/server-cert.crt')
-}, app);
+});
 const io = socketIO(server);
 
 const PORT = process.env.PORT || 8080;
@@ -31,6 +29,7 @@ const events = {
 
 const connectedUsers = {};
 
+io.origins((origin, done) => done(null, true)); // CORS
 io.on('connection', socket => {
 
 	// Store this user connection ID
@@ -65,9 +64,6 @@ io.on('connection', socket => {
 	});
 
 	// This user wants to call another one
-	// socket.on('call-user', data => {
-	// 	io.to(data.userToCall).emit('start-stream', { signal: data.signalData, from: data.from });
-	// });
 	/*
 		{ caller, callerSignal, buddyId }
 	*/
@@ -88,7 +84,7 @@ io.on('connection', socket => {
 		});
 	});
 
-	// // This user wants to accept an incoming call
+	// This user wants to accept an incoming call
 	// socket.on('accept-call', data => {
 	// 	io.to(data.to).emit('accept-stream', data.signal);
 	// });
